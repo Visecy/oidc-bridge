@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  oidc-bridge:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./conf:/root/conf
+    environment:
+      - REDIS_ADDR=redis:6379
+      - CONFIG_FILE=/root/conf/config.yaml
+      - PRIVATE_KEY_PATH=/root/conf/private.key
+      - PUBLIC_KEY_PATH=/root/conf/public.key
+      - GIN_MOD=release
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+  
