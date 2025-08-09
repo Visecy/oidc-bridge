@@ -1,0 +1,19 @@
+op_authorize_url: "https://op.example.com/oauth/authorize"
+op_token_url: "https://op.example.com/oauth/token"
+op_userinfo_url: "https://op.example.com/oauth/userinfo"
+issuer: "http://localhost:8080"
+id_token_lifetime: 3600
+nonce_cache_ttl: 600
+id_token_signing_alg: "RS256"
+scope_mapping:
+  openid: "openid"
+  profile: "user_profile"
+  email: "user_email"
+  custom_scope: "mapped_custom_scope"
+user_attribute_mapping:
+  sub: "sub"
+  name: "name"
+  email: "email"
+redis_addr: "localhost:6379"
+private_key_path: "./private.key"
+public_key_path: "./public.key"

@@ -31,7 +31,7 @@ func HandleAuthorize(c *gin.Context) {
 	// 2. 处理 scope 映射
 	hasOpenID := false
 	var mappedScopes []string
-	for _, s := range strings.Split(scope, ",") {
+	for _, s := range strings.Split(scope, " ") {
 		s = strings.TrimSpace(s)
 		if s == "openid" {
 			hasOpenID = true
@@ -67,7 +67,7 @@ func HandleAuthorize(c *gin.Context) {
 	queryParams.Add("response_type", "code")
 	queryParams.Add("client_id", clientID)
 	queryParams.Add("redirect_uri", redirectURI)
-	queryParams.Add("scope", strings.Join(mappedScopes, ","))
+	queryParams.Add("scope", strings.Join(mappedScopes, " "))
 	if state != "" {
 		queryParams.Add("state", state)
 	}
