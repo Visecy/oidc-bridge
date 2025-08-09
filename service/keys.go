@@ -4,12 +4,13 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
-	"io/ioutil"
+	"os"
+
 	"oidc-bridge/config"
 )
 
 func LoadPrivateKey() (*rsa.PrivateKey, error) {
-	keyData, err := ioutil.ReadFile(config.AppConfig.PrivateKeyPath)
+	keyData, err := os.ReadFile(config.AppConfig.PrivateKeyPath)
 	if err != nil {
 		return nil, err
 	}
@@ -19,7 +20,7 @@ func LoadPrivateKey() (*rsa.PrivateKey, error) {
 }
 
 func LoadPublicKey() (*rsa.PublicKey, error) {
-	keyData, err := ioutil.ReadFile(config.AppConfig.PublicKeyPath)
+	keyData, err := os.ReadFile(config.AppConfig.PublicKeyPath)
 	if err != nil {
 		return nil, err
 	}

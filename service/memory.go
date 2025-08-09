@@ -74,12 +74,12 @@ var GlobalMemoryCache *MemoryCache
 // InitMemoryCache 初始化内存缓存
 func InitMemoryCache() {
 	GlobalMemoryCache = NewMemoryCache()
-	
+
 	// 启动定时清理过期项的goroutine
 	go func() {
 		ticker := time.NewTicker(10 * time.Minute)
 		defer ticker.Stop()
-		
+
 		for range ticker.C {
 			GlobalMemoryCache.ClearExpired()
 		}

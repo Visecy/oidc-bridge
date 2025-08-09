@@ -3,7 +3,6 @@ package handler
 import (
 	"fmt"
 	"net/http"
-	"oidc-bridge/config"
 	"oidc-bridge/service"
 
 	"github.com/gin-gonic/gin"
@@ -32,20 +31,5 @@ func HandleUserInfo(c *gin.Context) {
 		return
 	}
 
-	// 3. 映射用户属性
-	mappedUserInfo := make(map[string]interface{})
-	for opAttr, oidcClaim := range config.AppConfig.AttrMapping {
-		if value, ok := userInfo[opAttr]; ok {
-			mappedUserInfo[oidcClaim] = value
-		}
-	}
-
-	// 4. 保留未映射的属性
-	for key, value := range userInfo {
-		if _, mapped := config.AppConfig.AttrMapping[key]; !mapped {
-			mappedUserInfo[key] = value
-		}
-	}
-
-	c.JSON(http.StatusOK, mappedUserInfo)
+	c.JSON(http.StatusOK, userInfo)
 }

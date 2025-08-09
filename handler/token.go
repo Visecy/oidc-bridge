@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"oidc-bridge/config"
 	"oidc-bridge/model"
 	"oidc-bridge/service"
 	"oidc-bridge/utils"
@@ -48,8 +49,14 @@ func HandleToken(c *gin.Context) {
 			return
 		}
 
+		// 获取 Issuer
+		issuer := config.AppConfig.Issuer
+		if issuer == "" {
+			issuer = c.Request.URL.Scheme + "://" + c.Request.URL.Host
+		}
+
 		// 生成 ID Token
-		idToken, err := service.GenerateIDToken(req.ClientID, req.RedirectURI, userInfo)
+		idToken, err := service.GenerateIDToken(issuer, req.ClientID, req.RedirectURI, userInfo)
 		if err != nil {
 			utils.ErrorLogger.Printf("Failed to generate ID token: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "server_error", "error_description": "failed to generate ID token"})

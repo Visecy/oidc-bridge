@@ -3,12 +3,13 @@ package service
 import (
 	"time"
 
-	"github.com/golang-jwt/jwt/v5"
 	"oidc-bridge/config"
 	"oidc-bridge/utils"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
-func GenerateIDToken(clientID, redirectURI string, userInfo map[string]interface{}) (string, error) {
+func GenerateIDToken(issuer, clientID, redirectURI string, userInfo map[string]interface{}) (string, error) {
 	// 1. 检查 nonce
 	nonce, err := GetNonce(clientID, redirectURI)
 	if err != nil {
@@ -19,7 +20,7 @@ func GenerateIDToken(clientID, redirectURI string, userInfo map[string]interface
 	// 2. 构建 claims
 	now := time.Now().Unix()
 	claims := jwt.MapClaims{
-		"iss":   config.AppConfig.Issuer,
+		"iss":   issuer,
 		"aud":   clientID,
 		"exp":   now + int64(config.AppConfig.IDTokenLifetime),
 		"iat":   now,

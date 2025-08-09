@@ -1,9 +1,9 @@
 package tests
 
 import (
+	"oidc-bridge/service"
 	"testing"
 	"time"
-	"oidc-bridge/service"
 )
 
 func TestMemoryCache(t *testing.T) {

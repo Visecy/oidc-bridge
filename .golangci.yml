@@ -1,0 +1,55 @@
+run:
+  # default concurrency is a available CPU number
+  concurrency: 4
+  
+  # timeout for analysis, e.g. 30s, 5m, default is 1m
+  timeout: 5m
+
+linters:
+  # enable specific linter
+  enable:
+    - gofmt
+    - govet
+    - errcheck
+    - staticcheck
+    - unused
+    - gosimple
+    - ineffassign
+    - typecheck
+    - revive
+    - gosec
+    
+  # disable specific linter
+  disable:
+    
+  # enable all available linters
+  enable-all: false
+  
+  # disable all linters
+  disable-all: false
+
+linters-settings:
+  golint:
+    # minimal confidence for issues, default is 0.8
+    min-confidence: 0.8
+
+issues:
+  # which dirs to skip: issues from them won't be reported
+  exclude-dirs:
+    - tests
+  
+  # which files to skip: they will be analyzed, but issues from them won't be reported
+  exclude-files:
+    - "_test.go"
+  
+  # list of regexps of issue texts to exclude, empty list by default
+  exclude:
+  
+  # exclude tests from analysis
+  exclude-tests: true
+  
+  # maximum issues count per one linter, set to 0 to disable, default is 50
+  max-issues-per-linter: 0
+  
+  # maximum count of issues with the same text, set to 0 to disable, default is 3
+  max-same-issues: 0

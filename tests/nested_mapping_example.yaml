@@ -10,12 +10,10 @@ scope_mapping:
   email: "email"
 user_attribute_mapping:
   sub: "sub"
-  name: "name"
-  email: "email"
   # For nested attributes, use '::' as key delimiter
-  # "data::email": "email"
-  # "data::name": "name"
-  # "data::avatar_url": "picture"
+  "data::email": "email"
+  "data::name": "name"
+  "data::avatar_url": "picture"
 redis_addr: "localhost:6379"
 private_key_path: "./private.key"
 public_key_path: "./public.key"

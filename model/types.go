@@ -1,18 +1,18 @@
 package model
 
 type Config struct {
-	OPAuthURL        string            `mapstructure:"op_authorize_url"`
-	OPTokenURL       string            `mapstructure:"op_token_url"`
-	OPUserInfoURL    string            `mapstructure:"op_userinfo_url"`
-	Issuer           string            `mapstructure:"issuer"`
-	IDTokenLifetime  int               `mapstructure:"id_token_lifetime"`
-	NonceCacheTTL    int               `mapstructure:"nonce_cache_ttl"`
-	SigningAlg       string            `mapstructure:"id_token_signing_alg"`
-	ScopeMapping     map[string]string `mapstructure:"scope_mapping"`
-	AttrMapping      map[string]string `mapstructure:"user_attribute_mapping"`
-	RedisAddr        string            `mapstructure:"redis_addr"`
-	PrivateKeyPath   string            `mapstructure:"private_key_path"`
-	PublicKeyPath    string            `mapstructure:"public_key_path"`
+	OPAuthURL       string            `mapstructure:"op_authorize_url"`
+	OPTokenURL      string            `mapstructure:"op_token_url"`
+	OPUserInfoURL   string            `mapstructure:"op_userinfo_url"`
+	Issuer          string            `mapstructure:"issuer"`
+	IDTokenLifetime int               `mapstructure:"id_token_lifetime"`
+	NonceCacheTTL   int               `mapstructure:"nonce_cache_ttl"`
+	SigningAlg      string            `mapstructure:"id_token_signing_alg"`
+	ScopeMapping    map[string]string `mapstructure:"scope_mapping"`
+	AttrMapping     map[string]string `mapstructure:"user_attribute_mapping"`
+	RedisAddr       string            `mapstructure:"redis_addr"`
+	PrivateKeyPath  string            `mapstructure:"private_key_path"`
+	PublicKeyPath   string            `mapstructure:"public_key_path"`
 }
 
 type Discovery struct {

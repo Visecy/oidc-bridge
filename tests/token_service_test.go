@@ -41,8 +41,8 @@ func TestGenerateIDToken(t *testing.T) {
 	clientID := "test_client"
 	redirectURI := "https://example.com/callback"
 	userInfo := map[string]interface{}{
-		"sub": "test_user",
-		"name": "Test User",
+		"sub":   "test_user",
+		"name":  "Test User",
 		"email": "test@example.com",
 	}
 
@@ -53,7 +53,8 @@ func TestGenerateIDToken(t *testing.T) {
 	}
 
 	// 调用函数
-	token, err := service.GenerateIDToken(clientID, redirectURI, userInfo)
+	issuer := "http://localhost:8080"
+	token, err := service.GenerateIDToken(issuer, clientID, redirectURI, userInfo)
 	if err != nil {
 		t.Errorf("Failed to generate ID token: %v", err)
 	}

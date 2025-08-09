@@ -14,6 +14,10 @@ build: output
 test:
 	go test ./tests/ -v
 
+.PHONY: lint
+lint:
+	golangci-lint run --config .golangci.yml
+
 .PHONY: keygen
 keygen: conf
 	openssl genrsa -out conf/private.key 2048

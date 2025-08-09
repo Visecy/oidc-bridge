@@ -1,0 +1,26 @@
+op_authorize_url: "https://open.feishu.cn/open-apis/authen/v1/index?redirect_uri={redirect_uri}&app_id={client_id}"
+op_token_url: "https://open.feishu.cn/open-apis/authen/v1/access_token"
+op_userinfo_url: "https://open.feishu.cn/open-apis/authen/v1/user_info"
+
+# issuer 可选配置项
+# 如果未提供，将从请求的 URL 中自动获取
+# issuer: "https://your-domain.com"
+
+id_token_lifetime: 3600
+nonce_cache_ttl: 300
+id_token_signing_alg: "RS256"
+
+scope_mapping:
+  "openid": "user_id"
+  "profile": "name,avatar_url"
+  "email": "email"
+
+user_attribute_mapping:
+  "user_id": "sub"
+  "name": "name"
+  "avatar_url": "picture"
+  "email": "email"
+
+redis_addr: "localhost:6379"
+private_key_path: "./keys/private_key.pem"
+public_key_path: "./keys/public_key.pem"

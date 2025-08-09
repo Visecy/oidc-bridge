@@ -13,12 +13,15 @@ import (
 func main() {
 	utils.InfoLogger.Println("Starting OIDC Bridge service")
 
-	// 定义端口命令行参数
+	// 定义命令行参数
+	configFile := flag.String("config", "config.yaml", "Path to config file")
+	privateKeyPath := flag.String("private-key", "", "Path to private key file")
+	publicKeyPath := flag.String("public-key", "", "Path to public key file")
 	port := flag.String("port", "8080", "Port to run the server on")
 	flag.Parse()
 
 	// 1. 加载配置（支持通过命令行参数或环境变量指定配置文件和密钥路径）
-	if err := config.LoadConfig(); err != nil {
+	if err := config.LoadConfig(*configFile, *privateKeyPath, *publicKeyPath); err != nil {
 		utils.ErrorLogger.Fatalf("Failed to load config: %v", err)
 	}
 
@@ -38,5 +41,7 @@ func main() {
 	// 5. 启动服务
 	serverAddr := ":" + *port
 	utils.InfoLogger.Printf("Server starting on port %s", serverAddr)
-	r.Run(serverAddr)
+	if err := r.Run(serverAddr); err != nil {
+		utils.ErrorLogger.Fatalf("Failed to start server: %v", err)
+	}
 }

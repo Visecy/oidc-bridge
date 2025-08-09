@@ -32,5 +32,6 @@ go.work.sum
 # .idea/
 # .vscode/
 
-/ssl
-/conf
+/conf/*
+!/conf/*.yaml
+!/conf/*.yml

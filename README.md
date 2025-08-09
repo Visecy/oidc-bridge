@@ -1,33 +1,67 @@
 # OIDC Bridge
 
-[中文版本](README_cn.md)
+This is an **OAuth 2.0 to OpenID Connect conversion service** that acts as a non-intrusive adapter layer, converting existing OAuth 2.0 identity providers into fully OpenID Connect compliant services without requiring any modifications to the original OP.
 
-This is an OIDC bridge service that converts existing OAuth 2.0 services into services compliant with the OpenID Connect protocol.
+**Language: English/[中文](README_cn.md)**
 
 ## Features
 
-- Discovery endpoint (/.well-known/openid-configuration)
-- Authorization endpoint (/authorize)
-- Token endpoint (/token)
-- UserInfo endpoint (/userinfo)
-- JWKS endpoint (/.well-known/jwks.json)
+- **Discovery endpoint** (/.well-known/openid-configuration) - Standard OIDC discovery configuration
+- **Authorization endpoint** (/authorize) - Scope mapping and nonce handling
+- **Token endpoint** (/token) - ID Token generation using OP's UserInfo
+- **UserInfo endpoint** (/userinfo) - Attribute mapping and standardization
+- **JWKS endpoint** (/.well-known/jwks.json) - Public keys for ID Token verification
+
+## How It Works
+
+This service acts as a transparent proxy between Relying Parties (RPs) and OAuth 2.0 Identity Providers (OPs), providing full OIDC compatibility while:
+- **Preserving existing RP credentials** - No need to re-register clients
+- **Maintaining OP compatibility** - Works with any standard OAuth 2.0 OP
+- **Zero code changes** - Simply replace the OP endpoint with the bridge service
+- **No credential storage** - Never stores client secrets or sensitive data
+
+**Request/Response Flow:**
+
+```mermaid
+sequenceDiagram
+    participant RP as Relying Party
+    participant Proxy as Conversion Service
+    participant OP as OAuth2 Provider
+
+    RP->>Proxy: 1. GET /authorize<br/>client_id=rp-abc, scope=openid profile
+    Proxy->>Proxy: 2. ✅ Scope mapping: openid→(remove), profile→basic
+    Proxy->>Proxy: 3. 💾 Cache nonce (key=rp-abc|https://rp.com/callback)
+    Proxy->>OP: 4. Redirect to /authorize<br/>client_id=rp-abc, scope=basic
+    OP->>RP: 5. OP login page (shows RP app name)
+    RP->>OP: 6. User consents
+    OP->>RP: 7. 🔑 Redirect to https://rp.com/callback?code=auth_code
+    RP->>Proxy: 8. POST /token<br/>code=auth_code, client_id=rp-abc
+    Proxy->>OP: 9. POST /token (forward RP credentials)
+    OP->>Proxy: 10. Return access_token
+    Proxy->>OP: 11. GET /userinfo (with access_token)
+    OP->>Proxy: 12. Return user claims
+    Proxy->>Proxy: 13. ✅ Generate ID Token (aud=rp-abc)
+    Proxy->>RP: 14. Return id_token + access_token
+```
 
 ## Configuration
 
-The configuration file is `config.yaml`, which includes the following configuration items:
+The configuration file is `config.yaml`, which includes the following configuration items based on your OAuth 2.0 provider:
 
-- `op_authorize_url`: OP's authorization endpoint URL
-- `op_token_url`: OP's token endpoint URL
-- `op_userinfo_url`: OP's userinfo endpoint URL
-- `issuer`: Issuer identifier
-- `id_token_lifetime`: ID Token lifetime (seconds)
-- `nonce_cache_ttl`: Nonce cache TTL (seconds)
-- `id_token_signing_alg`: ID Token signing algorithm
-- `scope_mapping`: Scope mapping
-- `user_attribute_mapping`: User attribute mapping
-- `redis_addr`: Redis address (optional, if not provided or connection fails, the service will fall back to local memory cache)
-- `private_key_path`: Private key path
-- `public_key_path`: Public key path
+| Configuration Item | Required | Description | Example |
+|-------------------|----------|-------------|---------|
+| `op_authorize_url` | Yes | Your OP's OAuth2 authorization endpoint | `https://op.example.com/oauth/authorize` |
+| `op_token_url` | Yes | Your OP's OAuth2 token endpoint | `https://op.example.com/oauth/token` |
+| `op_userinfo_url` | Yes | Your OP's userinfo endpoint | `https://op.example.com/oauth/userinfo` |
+| `issuer` | No | The issuer identifier for this bridge service. If not provided, it will be automatically obtained from the request URL | `https://your-bridge.example.com` |
+| `id_token_lifetime` | Yes | ID Token lifetime in seconds | `3600` |
+| `nonce_cache_ttl` | Yes | Nonce cache TTL in seconds (≤ 300s recommended) | `300` |
+| `id_token_signing_alg` | Yes | ID Token signing algorithm | `RS256` |
+| `scope_mapping` | Yes | Map OIDC scopes to your OP's OAuth2 scopes | `{"openid":"profile email", "profile":"basic", "email":"email"}` |
+| `user_attribute_mapping` | Yes | Map OP user attributes to OIDC claims | `{"username":"sub", "email":"email", "name":"name"}` |
+| `redis_addr` | No | Redis address for nonce cache (optional) | `localhost:6379` |
+| `private_key_path` | Yes | Path to RSA private key for ID Token signing | `/path/to/private.key` |
+| `public_key_path` | Yes | Path to RSA public key for JWKS endpoint | `/path/to/public.key` |
 
 ## Deployment
 
@@ -75,6 +109,10 @@ user_attribute_mapping:
   name: "full_name"
   email: "email_address"
   picture: "avatar_url"
+  # For nested attributes, use '::' as key delimiter (commented out as example)
+  # data::email: "email"
+  # data::name: "name"
+  # data::avatar_url: "picture"
 
 # Redis address (optional)
 # redis_addr: "localhost:6379"
@@ -162,17 +200,23 @@ The project includes a comprehensive unit test suite covering all major modules.
 Run all tests:
 
 ```bash
-go test ./tests/...
-```
-
-Run tests for specific modules:
-
-```bash
-# Run handler module tests
-go test ./tests/*_test.go
-
-# Run service module tests
-go test ./tests/*_service_test.go
+make test
 ```
 
 Note: Some tests may require Redis service running at localhost:6379 and valid key files.
+
+
+## ⚠️ Security Warning
+
+**IMPORTANT: Do NOT use oidc-bridge servers built by untrusted parties!**
+
+Oidc-bridge does not bind to specific client_ids and supports shared usage by multiple RPs in principle. But using oidc-bridge services provided by untrusted parties poses serious security risks:
+
+- **permission leakage risk**: During the authorization process, oidc-bridge can obtain the RP's client_secret and effectively has the same access permissions as the RP
+- **data leakage risk**: oidc-bridge can access all user data and access tokens that pass through it
+
+**Recommendations:**
+- Always build and deploy your own oidc-bridge service
+- Ensure oidc-bridge runs in a trusted environment
+- Regularly rotate client_secrets and access tokens
+- Monitor oidc-bridge access logs and anomalous behavior

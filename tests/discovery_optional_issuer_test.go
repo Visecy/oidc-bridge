@@ -10,23 +10,31 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/spf13/viper"
 )
 
 func init() {
-	// 加载配置
-	configFile := "config_test.yaml"
-	if err := config.LoadConfig(configFile, "./private.key", "./public.key"); err != nil {
+	// 加载可选 Issuer 的测试配置
+	viper.SetConfigName("config_test_optional_issuer")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath(".")
+	if err := viper.ReadInConfig(); err != nil {
+		panic(err)
+	}
+
+	config.AppConfig = &model.Config{}
+	if err := viper.Unmarshal(config.AppConfig); err != nil {
 		panic(err)
 	}
 }
 
-func TestHandleDiscovery(t *testing.T) {
+func TestHandleDiscoveryWithOptionalIssuer(t *testing.T) {
 	// 创建测试上下文
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 
 	// 创建一个测试请求，以便获取正确的 URL
-	c.Request, _ = http.NewRequest("GET", "/.well-known/openid-configuration", nil)
+	c.Request, _ = http.NewRequest("GET", "http://example.com/.well-known/openid-configuration", nil)
 
 	// 调用处理函数
 	handler.HandleDiscovery(c)
@@ -43,10 +51,7 @@ func TestHandleDiscovery(t *testing.T) {
 	}
 
 	// 验证关键字段
-	expectedIssuer := config.AppConfig.Issuer
-	if expectedIssuer == "" {
-		expectedIssuer = "http://example.com"
-	}
+	expectedIssuer := "http://example.com"
 
 	if discovery.Issuer != expectedIssuer {
 		t.Errorf("Expected issuer %s, got %s", expectedIssuer, discovery.Issuer)
