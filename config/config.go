@@ -11,7 +11,13 @@ import (
 var AppConfig *model.Config
 
 func LoadConfig(configFile, privateKeyPath, publicKeyPath string) error {
-	utils.DebugLogger.Printf("Loading config from file: %s", configFile)
+	// 检查环境变量是否指定了配置文件路径
+	if envConfigFile := os.Getenv("CONFIG_FILE"); envConfigFile != "" {
+		configFile = envConfigFile
+		utils.DebugLogger.Printf("Config file path overridden by environment variable: %s", configFile)
+	} else {
+		utils.DebugLogger.Printf("Loading config from file: %s", configFile)
+	}
 
 	// 使用 viper 加载配置文件
 	viper.SetConfigFile(configFile)
@@ -39,8 +45,9 @@ func LoadConfig(configFile, privateKeyPath, publicKeyPath string) error {
 		AppConfig.PublicKeyPath = envPublicKeyPath
 		utils.DebugLogger.Printf("Public key path overridden by environment variable: %s", envPublicKeyPath)
 	}
-	if envConfigFile := os.Getenv("CONFIG_FILE"); envConfigFile != "" {
-		utils.DebugLogger.Printf("Config file from environment variable ignored since command-line argument is used: %s", configFile)
+	if envRedisAddr := os.Getenv("REDIS_ADDR"); envRedisAddr != "" {
+		AppConfig.RedisAddr = envRedisAddr
+		utils.DebugLogger.Printf("Redis address overridden by environment variable: %s", envRedisAddr)
 	}
 
 	// 再处理命令行参数，若有值则覆盖环境变量和配置文件中的设置
