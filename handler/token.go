@@ -52,7 +52,19 @@ func HandleToken(c *gin.Context) {
 		// 获取 Issuer
 		issuer := config.AppConfig.Issuer
 		if issuer == "" {
-			issuer = c.Request.URL.Scheme + "://" + c.Request.URL.Host
+			// Determine scheme based on TLS, X-Forwarded-Proto, or default to http
+			var scheme string
+			if c.Request.TLS != nil {
+				scheme = "https"
+			} else if proto := c.GetHeader("X-Forwarded-Proto"); proto != "" {
+				scheme = proto
+			} else {
+				scheme = "http"
+			}
+			
+			// Use the Host from the request for better reverse proxy compatibility
+			host := c.Request.Host
+			issuer = scheme + "://" + host
 		}
 
 		// 生成 ID Token
