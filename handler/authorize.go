@@ -31,26 +31,24 @@ func HandleAuthorize(c *gin.Context) {
 	// 2. 处理 scope 映射
 	hasOpenID := false
 	var mappedScopes []string
-	for _, s := range strings.Split(scope, ",") {
+	for _, s := range strings.Split(scope, " ") {
 		s = strings.TrimSpace(s)
 		if s == "openid" {
 			hasOpenID = true
 			continue
 		}
 		if mapped, ok := config.AppConfig.ScopeMapping[s]; ok {
+			if mapped == "" {
+				continue
+			}
 			mappedScopes = append(mappedScopes, mapped)
 		} else {
 			mappedScopes = append(mappedScopes, s)
 		}
 	}
 
-	// 3. 缓存 nonce
-	if hasOpenID {
-		if nonce == "" {
-			utils.ErrorLogger.Printf("Nonce is required when scope includes openid for client: %s", clientID)
-			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid_request", "error_description": "nonce is required when scope includes openid"})
-			return
-		}
+	// 3. 缓存 nonce (如果提供)
+	if hasOpenID && nonce != "" {
 		// 存储 nonce 到 Redis
 		err := service.SetNonce(clientID, redirectURI, nonce)
 		if err != nil {
@@ -67,7 +65,7 @@ func HandleAuthorize(c *gin.Context) {
 	queryParams.Add("response_type", "code")
 	queryParams.Add("client_id", clientID)
 	queryParams.Add("redirect_uri", redirectURI)
-	queryParams.Add("scope", strings.Join(mappedScopes, ","))
+	queryParams.Add("scope", strings.Join(mappedScopes, " "))
 	if state != "" {
 		queryParams.Add("state", state)
 	}

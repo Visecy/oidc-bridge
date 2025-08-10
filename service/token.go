@@ -10,21 +10,25 @@ import (
 )
 
 func GenerateIDToken(issuer, clientID, redirectURI string, userInfo map[string]interface{}) (string, error) {
-	// 1. 检查 nonce
-	nonce, err := GetNonce(clientID, redirectURI)
-	if err != nil {
-		utils.ErrorLogger.Printf("Failed to retrieve nonce: %v", err)
-		return "", err
+	// 1. 尝试获取 nonce (如果不存在也不报错)
+	var nonce string
+	if storedNonce, err := GetNonce(clientID, redirectURI); err == nil {
+		// 只有当 nonce 存在时才使用它
+		nonce = storedNonce
 	}
 
 	// 2. 构建 claims
 	now := time.Now().Unix()
 	claims := jwt.MapClaims{
-		"iss":   issuer,
-		"aud":   clientID,
-		"exp":   now + int64(config.AppConfig.IDTokenLifetime),
-		"iat":   now,
-		"nonce": nonce,
+		"iss": issuer,
+		"aud": clientID,
+		"exp": now + int64(config.AppConfig.IDTokenLifetime),
+		"iat": now,
+	}
+
+	// 只有当 nonce 存在时才添加到 claims 中
+	if nonce != "" {
+		claims["nonce"] = nonce
 	}
 
 	// 3. 映射用户属性

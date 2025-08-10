@@ -13,11 +13,32 @@ services:
       - PRIVATE_KEY_PATH=/root/conf/private.key
       - PUBLIC_KEY_PATH=/root/conf/public.key
       - GIN_MOD=release
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/.well-known/openid-configuration"]
+      start_period: 20s
+      interval: 30s
+      retries: 5
+      timeout: 3s
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
 
   redis:
     image: redis:alpine
     ports:
       - "6379:6379"
-  
+    command: --save 60 1 --loglevel warning
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      start_period: 20s
+      interval: 30s
+      retries: 5
+      timeout: 3s
+    volumes:
+      - redis:/data
+
+volumes:
+  redis:
+    driver: local

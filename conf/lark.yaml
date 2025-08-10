@@ -5,13 +5,13 @@ id_token_lifetime: 3600
 nonce_cache_ttl: 600
 id_token_signing_alg: "RS256"
 scope_mapping:
-  profile: "contact:user.base:readonly"
+  profile: ""
   email: "contact:user.email:readonly"
 user_attribute_mapping:
-  "data.open_id": "sub"
-  "data.email": "email"
-  "data.name": "name"
-  "data.avatar_url": "picture"
+  "data::open_id": "sub"
+  "data::email": "email"
+  "data::name": "name"
+  "data::avatar_url": "picture"
 redis_addr: "redis:6379"
 private_key_path: "conf/private.key"
 public_key_path: "conf/public.key"
