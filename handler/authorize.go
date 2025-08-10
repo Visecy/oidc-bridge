@@ -44,13 +44,8 @@ func HandleAuthorize(c *gin.Context) {
 		}
 	}
 
-	// 3. 缓存 nonce
-	if hasOpenID {
-		if nonce == "" {
-			utils.ErrorLogger.Printf("Nonce is required when scope includes openid for client: %s", clientID)
-			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid_request", "error_description": "nonce is required when scope includes openid"})
-			return
-		}
+	// 3. 缓存 nonce (如果提供)
+	if hasOpenID && nonce != "" {
 		// 存储 nonce 到 Redis
 		err := service.SetNonce(clientID, redirectURI, nonce)
 		if err != nil {
