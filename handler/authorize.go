@@ -38,6 +38,9 @@ func HandleAuthorize(c *gin.Context) {
 			continue
 		}
 		if mapped, ok := config.AppConfig.ScopeMapping[s]; ok {
+			if mapped == "" {
+				continue
+			}
 			mappedScopes = append(mappedScopes, mapped)
 		} else {
 			mappedScopes = append(mappedScopes, s)

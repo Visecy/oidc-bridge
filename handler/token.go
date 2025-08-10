@@ -61,7 +61,7 @@ func HandleToken(c *gin.Context) {
 			} else {
 				scheme = "http"
 			}
-			
+
 			// Use the Host from the request for better reverse proxy compatibility
 			host := c.Request.Host
 			issuer = scheme + "://" + host
